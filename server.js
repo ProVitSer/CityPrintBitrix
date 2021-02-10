@@ -10,8 +10,8 @@ const Bitrix = require('./src/bitrix'),
 
 const bitrix = new Bitrix();
 const BITRIXADMIN = '11',
-    INCOMINGID = '2',
-    OUTGOINGID = '1';
+    INCOMINGID = '1',
+    OUTGOINGID = '2';
 
 
 async function getUserList() {
@@ -29,9 +29,9 @@ async function getUserList() {
 //{ "exten": "89104061420", "unicueid": "1612529458.4626" , "extensionNumber" : "666" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529458.4626-2021-02-05-15_50.wav", "start" : "2021-02-05 15:50:58", "end" : "2021-02-05 15:51:04" }
 async function sendInfoByOutgoingCall({ exten, unicueid, extensionNumber, billsec, disposition, recording, start, end }) {
     try {
-        let resultRegisterCall = await bitrix.externalCallRegister(user[extensionNumber], exten, INCOMINGID, start);
+        let resultRegisterCall = await bitrix.externalCallRegister(user[extensionNumber], exten, OUTGOINGID, start);
         logger.info(`Получен результат регистрации исходящего вызова ${util.inspect(resultRegisterCall)}`);
-        let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[extensionNumber], billsec, status[disposition], INCOMINGID, recording);
+        let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[extensionNumber], billsec, status[disposition], OUTGOINGID, recording);
         logger.info(`Получен результат завершения исходящего вызова ${util.inspect(resultFinishCall)}`);
         return;
     } catch (e) {
@@ -50,9 +50,9 @@ async function sendInfoByIncomingCall({ unicueid, incomingNumber, billsec, dispo
         let lastCallUser = await searchInDB.searchEndIncosearchLastUserRingmingId(end3CXId);
         let isAnswered = callInfo[0].is_answered ? '200' : '304';
         if (user[lastCallUser] != undefined) {
-            let resultRegisterCall = await bitrix.externalCallRegister(user[lastCallUser], incomingNumber, OUTGOINGID, start);
+            let resultRegisterCall = await bitrix.externalCallRegister(user[lastCallUser], incomingNumber, INCOMINGID, start);
             logger.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
-            let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[lastCallUser], billsec, isAnswered, OUTGOINGID, recording);
+            let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[lastCallUser], billsec, isAnswered, INCOMINGID, recording);
             logger.info(`Получен результат завершения входящего вызова ${util.inspect(resultFinishCall)}`);
 
             if (isAnswered == '304') {
@@ -64,9 +64,9 @@ async function sendInfoByIncomingCall({ unicueid, incomingNumber, billsec, dispo
                 return;
             }
         } else {
-            let resultRegisterCall = await bitrix.externalCallRegister(BITRIXADMIN, incomingNumber, OUTGOINGID, start);
+            let resultRegisterCall = await bitrix.externalCallRegister(BITRIXADMIN, incomingNumber, INCOMINGID, start);
             logger.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
-            let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, BITRIXADMIN, billsec, isAnswered, OUTGOINGID, recording);
+            let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, BITRIXADMIN, billsec, isAnswered, INCOMINGID, recording);
             logger.info(`Получен результат завершения входящего вызова ${util.inspect(resultFinishCall)}`);
             if (isAnswered == '304') {
                 let resultCreateTask = await bitrix.createTask(BITRIXADMIN, incomingNumber);
@@ -91,7 +91,7 @@ nami.on(`namiEventNewexten`, (event) => {
     if (event.context == 'outbound-hangup-handler' &&
         event.application == 'NoOp'
     ) {
-        logger.error(`Завершился исходящие вызов на Asterisk ${event.appdata}`);
+        logger.info(`Завершился исходящие вызов на Asterisk ${event.appdata}`);
         let phoneEvent = JSON.parse(event.appdata);
         sendInfoByOutgoingCall(phoneEvent);
     }
@@ -103,6 +103,6 @@ nami.on(`namiEventNewexten`, (event) => {
     ) {
         logger.error(`Завершился входящий вызов на Asterisk ${event.appdata}`);
         let phoneEvent = JSON.parse(event.appdata);
-        sendInfoByOutgoingCall(phoneEvent);
+        sendInfoByIncomingCall(phoneEvent);
     }
 });
