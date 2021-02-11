@@ -44,19 +44,21 @@ async function sendInfoByOutgoingCall({ exten, unicueid, extensionNumber, billse
 async function sendInfoByIncomingCall({ unicueid, incomingNumber, billsec, disposition, recording, start, end }) {
     try {
         let first3CXId = await searchInDB.searchFirstIncomingId(incomingNumber);
-        let callId = await searchInDB.searchIncomingCallId(first3CXId);
-        let end3CXId = await searchInDB.searchEndIncomingId(callId);
-        let callInfo = await searchInDB.searchCallInfo(callId);
-        let lastCallUser = await searchInDB.searchEndIncosearchLastUserRingmingId(end3CXId);
+        let callId = await searchInDB.searchIncomingCallId(first3CXId[0].id);
+        let end3CXId = await searchInDB.searchEndIncomingId(callId[0].call_id);
+        let callInfo = await searchInDB.searchCallInfo(callId[0].call_id);
+        let lastCallUser = await searchInDB.searchLastUserRing(end3CXId[0].info_id);
         let isAnswered = callInfo[0].is_answered ? '200' : '304';
         if (user[lastCallUser] != undefined) {
-            let resultRegisterCall = await bitrix.externalCallRegister(user[lastCallUser], incomingNumber, INCOMINGID, start);
+            let resultRegisterCall = await bitrix.externalCallRegister(user[lastCallUser[0].dn], incomingNumber, INCOMINGID, start);
             logger.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
-            let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[lastCallUser], billsec, isAnswered, INCOMINGID, recording);
+            logger.info(user[lastCallUser[0].dn], incomingNumber, INCOMINGID, start);
+            logger.info(user[lastCallUser[0].dn], billsec, isAnswered, INCOMINGID, recording);
+            let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[lastCallUser[0].dn], billsec, isAnswered, INCOMINGID, recording);
             logger.info(`Получен результат завершения входящего вызова ${util.inspect(resultFinishCall)}`);
 
             if (isAnswered == '304') {
-                let resultCreateTask = await bitrix.createTask(user[lastCallUser], incomingNumber);
+                let resultCreateTask = await bitrix.createTask(user[lastCallUser[0].dn], incomingNumber);
                 logger.info(`Создана задача  ${util.inspect(resultCreateTask)}`);
                 setTimeout(bitrix.taskStatus.bind(bitrix), 180000, resultCreateTask.task.id);
                 return;
@@ -80,7 +82,7 @@ async function sendInfoByIncomingCall({ unicueid, incomingNumber, billsec, dispo
         }
 
     } catch (e) {
-        logger.error(`Ошибка по исходящему вызову ${e}`);
+        logger.error(`Ошибка по входящему вызову ${e}`);
     }
 };
 //sendInfoByIncomingCall('666', '79104061420', '2021-02-05 22:01:17', '0', '304', '1612529117.4620-2021-02-05-15_45.wav');
@@ -103,6 +105,6 @@ nami.on(`namiEventNewexten`, (event) => {
     ) {
         logger.error(`Завершился входящий вызов на Asterisk ${event.appdata}`);
         let phoneEvent = JSON.parse(event.appdata);
-        sendInfoByIncomingCall(phoneEvent);
+        setTimeout(sendInfoByIncomingCall, 20000, phoneEvent);
     }
 });
