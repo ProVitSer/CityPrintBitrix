@@ -26,7 +26,7 @@ async function getUserList() {
 }
 //getUserList();
 
-//{ "exten": "89104061420", "unicueid": "1612529458.4626" , "extensionNumber" : "666" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529458.4626-2021-02-05-15_50.wav", "start" : "2021-02-05 15:50:58", "end" : "2021-02-05 15:51:04" }
+//{ "exten": "749999999999", "unicueid": "1612529458.4626" , "extensionNumber" : "666" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529458.4626-2021-02-05-15_50.wav", "start" : "2021-02-05 15:50:58", "end" : "2021-02-05 15:51:04" }
 async function sendInfoByOutgoingCall({ exten, unicueid, extensionNumber, billsec, disposition, recording, start, end }) {
     try {
         let resultRegisterCall = await bitrix.externalCallRegister(user[extensionNumber], exten, OUTGOINGID, start);
@@ -39,8 +39,9 @@ async function sendInfoByOutgoingCall({ exten, unicueid, extensionNumber, billse
     }
 };
 
-
-//{ "unicueid": "1612529117.4620" , "incomingNumber" : "79104061420" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529117.4620-2021-02-05-15_45.wav", "start" : "2021-02-05 15:45:17", "end" : "2021-02-05 15:45:25" }
+/*
+Обработка информации по входящему вызову
+{ "unicueid": "1612529117.4620" , "incomingNumber" : "749999999999" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529117.4620-2021-02-05-15_45.wav", "start" : "2021-02-05 15:45:17", "end" : "2021-02-05 15:45:25" }*/
 async function sendInfoByIncomingCall({ unicueid, incomingNumber, billsec, disposition, recording, start, end }) {
     try {
         let first3CXId = await searchInDB.searchFirstIncomingId(incomingNumber);
@@ -48,7 +49,8 @@ async function sendInfoByIncomingCall({ unicueid, incomingNumber, billsec, dispo
         let end3CXId = await searchInDB.searchEndIncomingId(callId[0].call_id);
         let callInfo = await searchInDB.searchCallInfo(callId[0].call_id);
         let lastCallUser = await searchInDB.searchLastUserRing(end3CXId[0].info_id);
-        let isAnswered = callInfo[0].is_answered ? '200' : '304';
+        let isAnswered = callInfo[0].is_answered ? '200' : '304'; //Проверка отвечен вызов или нет 
+
         if (user[lastCallUser] != undefined) {
             let resultRegisterCall = await bitrix.externalCallRegister(user[lastCallUser[0].dn], incomingNumber, INCOMINGID, start);
             logger.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
@@ -85,10 +87,31 @@ async function sendInfoByIncomingCall({ unicueid, incomingNumber, billsec, dispo
         logger.error(`Ошибка по входящему вызову ${e}`);
     }
 };
-//sendInfoByIncomingCall('666', '79104061420', '2021-02-05 22:01:17', '0', '304', '1612529117.4620-2021-02-05-15_45.wav');
 
 
-
+/*
+EOL: '\r\n',
+  variables: {},
+  event: 'Newexten',
+  privilege: 'dialplan,all',
+  channel: 'PJSIP/00018-000006dd',
+  channelstate: '7',
+  channelstatedesc: 'Busy',
+  calleridnum: '00018',
+  calleridname: '666',
+  connectedlinenum: '<unknown>',
+  connectedlinename: '<unknown>',
+  language: 'en',
+  accountcode: '',
+  context: 'outbound-hangup-handler',
+  exten: 's',
+  priority: '1',
+  uniqueid: '1612526997.4596',
+  linkedid: '1612526997.4596',
+  extension: 's',
+  application: 'NoOp',
+  appdata: '{ "exten": "749999999999", "unicueid": "1612529458.4626" , "extensionNumber" : "666" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529458.4626-2021-02-05-15_50.wav", "start" : "2021-02-05 15:50:58", "end" : "2021-02-05 15:51:04" }'
+ */
 nami.on(`namiEventNewexten`, (event) => {
     if (event.context == 'outbound-hangup-handler' &&
         event.application == 'NoOp'
@@ -99,6 +122,30 @@ nami.on(`namiEventNewexten`, (event) => {
     }
 });
 
+
+/*
+EOL: '\r\n',
+  variables: {},
+  event: 'Newexten',
+  privilege: 'dialplan,all',
+  channel: 'PJSIP/00018-000006dd',
+  channelstate: '7',
+  channelstatedesc: 'Busy',
+  calleridnum: '00018',
+  calleridname: '666',
+  connectedlinenum: '<unknown>',
+  connectedlinename: '<unknown>',
+  language: 'en',
+  accountcode: '',
+  context: 'incoming-hangup-handler',
+  exten: 's',
+  priority: '1',
+  uniqueid: '1612526997.4596',
+  linkedid: '1612526997.4596',
+  extension: 's',
+  application: 'NoOp',
+  appdata: '{ "exten": "749999999999", "unicueid": "1612529458.4626" , "extensionNumber" : "666" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529458.4626-2021-02-05-15_50.wav", "start" : "2021-02-05 15:50:58", "end" : "2021-02-05 15:51:04" }'
+ */
 nami.on(`namiEventNewexten`, (event) => {
     if (event.context == 'incoming-hangup-handler' &&
         event.application == 'NoOp'
