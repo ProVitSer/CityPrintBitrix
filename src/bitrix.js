@@ -18,22 +18,6 @@ class Bitrix {
         }
     }
 
-    async userGet() {
-        try {
-            const res = await axios.get(`https://${this.domain}/rest/41/${this.hash}/user.get`, this.config)
-            const result = await res;
-
-            if (!result) {
-                return [];
-            }
-            return result.data.result
-        } catch (e) {
-            return e;
-        }
-
-    }
-
-
     async externalCallRegister(...params) {
 
         let json = {

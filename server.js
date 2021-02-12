@@ -14,19 +14,6 @@ const BITRIXADMIN = '11',
     OUTGOINGID = '2';
 
 
-async function getUserList() {
-    try {
-        let result = await bitrix.userGet();
-        for (const item of result) {
-            logger.info(`"${item.UF_PHONE_INNER}" : "${item.ID}",`)
-        }
-    } catch (e) {
-        logger.error(e);
-    }
-}
-//getUserList();
-
-
 //Создание задачи в Bitrix по пропущенному вызову
 async function createTaskOnMissedCall(bitrixUserId, incomingNumber) {
     try {
