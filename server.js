@@ -26,7 +26,26 @@ async function getUserList() {
 }
 //getUserList();
 
-//{ "exten": "749999999999", "unicueid": "1612529458.4626" , "extensionNumber" : "666" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529458.4626-2021-02-05-15_50.wav", "start" : "2021-02-05 15:50:58", "end" : "2021-02-05 15:51:04" }
+
+//Создание задачи в Bitrix по пропущенному вызову
+async function createTaskOnMissedCall(bitrixUserId, incomingNumber) {
+    try {
+        if (isAnswered == '304') {
+            let resultCreateTask = await bitrix.createTask(bitrixUserId, incomingNumber);
+            logger.info(`Создана задача  ${util.inspect(resultCreateTask)}`);
+            setTimeout(bitrix.taskStatus.bind(bitrix), 180000, resultCreateTask.task.id);
+            return;
+        } else {
+            return;
+        }
+    } catch (e) {
+        logger.error(`Ошибка создание задачи по пропущенному вызову ${util.inspect(e)}`);
+    }
+}
+
+/*
+Обработка информации по исходящему вызову
+{ "exten": "749999999999", "unicueid": "1612529458.4626" , "extensionNumber" : "666" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529458.4626-2021-02-05-15_50.wav", "start" : "2021-02-05 15:50:58", "end" : "2021-02-05 15:51:04" }*/
 async function sendInfoByOutgoingCall({ exten, unicueid, extensionNumber, billsec, disposition, recording, start, end }) {
     try {
         let resultRegisterCall = await bitrix.externalCallRegister(user[extensionNumber], exten, OUTGOINGID, start);
@@ -54,33 +73,15 @@ async function sendInfoByIncomingCall({ unicueid, incomingNumber, billsec, dispo
         if (user[lastCallUser] != undefined) {
             let resultRegisterCall = await bitrix.externalCallRegister(user[lastCallUser[0].dn], incomingNumber, INCOMINGID, start);
             logger.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
-            logger.info(user[lastCallUser[0].dn], incomingNumber, INCOMINGID, start);
-            logger.info(user[lastCallUser[0].dn], billsec, isAnswered, INCOMINGID, recording);
             let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[lastCallUser[0].dn], billsec, isAnswered, INCOMINGID, recording);
             logger.info(`Получен результат завершения входящего вызова ${util.inspect(resultFinishCall)}`);
-
-            if (isAnswered == '304') {
-                let resultCreateTask = await bitrix.createTask(user[lastCallUser[0].dn], incomingNumber);
-                logger.info(`Создана задача  ${util.inspect(resultCreateTask)}`);
-                setTimeout(bitrix.taskStatus.bind(bitrix), 180000, resultCreateTask.task.id);
-                return;
-            } else {
-                return;
-            }
+            createTaskOnMissedCall(user[lastCallUser[0].dn], incomingNumber);
         } else {
             let resultRegisterCall = await bitrix.externalCallRegister(BITRIXADMIN, incomingNumber, INCOMINGID, start);
             logger.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
             let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, BITRIXADMIN, billsec, isAnswered, INCOMINGID, recording);
             logger.info(`Получен результат завершения входящего вызова ${util.inspect(resultFinishCall)}`);
-            if (isAnswered == '304') {
-                let resultCreateTask = await bitrix.createTask(BITRIXADMIN, incomingNumber);
-                logger.info(`Создана задача  ${util.inspect(resultCreateTask)}`);
-                setTimeout(bitrix.taskStatus.bind(bitrix), 180000, resultCreateTask.task.id);
-
-                return;
-            } else {
-                return;
-            }
+            createTaskOnMissedCall(BITRIXADMIN, incomingNumber);
         }
 
     } catch (e) {
@@ -144,7 +145,7 @@ EOL: '\r\n',
   linkedid: '1612526997.4596',
   extension: 's',
   application: 'NoOp',
-  appdata: '{ "exten": "749999999999", "unicueid": "1612529458.4626" , "extensionNumber" : "666" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529458.4626-2021-02-05-15_50.wav", "start" : "2021-02-05 15:50:58", "end" : "2021-02-05 15:51:04" }'
+  appdata: '{ "unicueid": "1612529117.4620" , "incomingNumber" : "749999999999" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529117.4620-2021-02-05-15_45.wav", "start" : "2021-02-05 15:45:17", "end" : "2021-02-05 15:45:25" }'
  */
 nami.on(`namiEventNewexten`, (event) => {
     if (event.context == 'incoming-hangup-handler' &&
