@@ -18,8 +18,17 @@ class Bitrix {
         }
     }
 
-    async externalCallRegister(...params) {
+    async sendAxios(url, json) {
+        const res = await axios.post(`https://${this.domain}/rest/41/${this.hash}/${url}`, JSON.stringify(json), this.config)
+        const result = await res;
 
+        if (!result) {
+            return [];
+        }
+        return result.data.result
+    }
+
+    async externalCallRegister(...params) {
         let json = {
             "USER_ID": params[0],
             "PHONE_NUMBER": params[1],
@@ -30,13 +39,8 @@ class Bitrix {
         };
 
         try {
-            const res = await axios.post(`https://${this.domain}/rest/41/${this.hash}/telephony.externalcall.register.json`, JSON.stringify(json), this.config)
-            const result = await res;
-
-            if (!result) {
-                return [];
-            }
-            return result.data.result
+            let result = await this.sendAxios('telephony.externalcall.register.json', json)
+            return result;
         } catch (e) {
             return e;
         }
@@ -50,18 +54,13 @@ class Bitrix {
             "DURATION": params[2],
             "STATUS_CODE": params[3],
             "TYPE": params[4],
-            //"RECORD_URL": `http://certsys.onvoip.ru/${recordTime}/${params[5]}`
+            "RECORD_URL": `http://192.168.10.185/${recordTime}/${params[5]}`
         };
 
 
         try {
-            const res = await axios.post(`https://${this.domain}/rest/41/${this.hash}/telephony.externalcall.finish`, JSON.stringify(json), this.config)
-            const result = await res;
-
-            if (!result) {
-                return [];
-            }
-            return result.data.result
+            let result = await this.sendAxios('telephony.externalcall.finish', json)
+            return result;
         } catch (e) {
             return e;
         }
@@ -81,13 +80,8 @@ class Bitrix {
         }
 
         try {
-            const res = await axios.post(`https://${this.domain}/rest/41/${this.hash}/tasks.task.add`, JSON.stringify(json), this.config)
-            const result = await res;
-
-            if (!result) {
-                return [];
-            }
-            return result.data.result
+            let result = await this.sendAxios('tasks.task.add', json)
+            return result;
         } catch (e) {
             return e;
         }
@@ -99,17 +93,15 @@ class Bitrix {
         }
 
         try {
-            const res = await axios.post(`https://${this.domain}/rest/41/${this.hash}/tasks.task.get`, JSON.stringify(json), this.config)
-            const result = await res;
-
-            if (result.data.result.task.status == '2') {
+            let result = await this.sendAxios('tasks.task.get', json)
+            if (result.task.status == '2') {
                 logger.info(`Задача просрочена ${params[0]}`);
                 this.updateTaskResponsibleId(params[0]);
             }
             return;
 
         } catch (e) {
-            logger.error(e);
+            return e;
         }
     };
 
@@ -121,10 +113,8 @@ class Bitrix {
             }
         }
 
-
         try {
-            const res = await axios.post(`https://${this.domain}/rest/41/${this.hash}/tasks.task.update`, JSON.stringify(json), this.config)
-            const result = await res;
+            let result = await this.sendAxios('tasks.task.update', json)
             logger.info(`Изменение ответственного по задаче ${util.inspect(result)}`);
 
         } catch (e) {

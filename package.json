@@ -1,34 +1,34 @@
 {
-  "name": "cityprintbitrix",
-  "version": "1.0.0",
-  "description": "Интеграция Bitrix24 с IP PBX 3CX",
-  "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ProVitSer/CityPrintBitrix.git"
-  },
-  "keywords": [
-    "Voip",
-    "Bitrix24",
-    "3CX"
-  ],
-  "author": "ProVitSer",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/ProVitSer/CityPrintBitrix/issues"
-  },
-  "homepage": "https://github.com/ProVitSer/CityPrintBitrix#readme",
-  "dependencies": {
-    "axios": "^0.21.1",
-    "bluebird": "^3.7.2",
-    "log4js": "^6.3.0",
-    "moment": "^2.29.1",
-    "nami": "^0.7.2",
-    "pg-promise": "^10.9.2",
-    "util": "^0.12.3"
-  }
+    "name": "cityprintbitrix",
+    "version": "1.0.1",
+    "description": "Интеграция Bitrix24 с IP PBX 3CX",
+    "main": "server.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node server.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ProVitSer/CityPrintBitrix.git"
+    },
+    "keywords": [
+        "Voip",
+        "Bitrix24",
+        "3CX"
+    ],
+    "author": "ProVitSer",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/ProVitSer/CityPrintBitrix/issues"
+    },
+    "homepage": "https://github.com/ProVitSer/CityPrintBitrix#readme",
+    "dependencies": {
+        "axios": "^0.21.1",
+        "bluebird": "^3.7.2",
+        "log4js": "^6.3.0",
+        "moment": "^2.29.1",
+        "nami": "^0.7.2",
+        "pg-promise": "^10.9.2",
+        "util": "^0.12.3"
+    }
 }
