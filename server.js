@@ -15,7 +15,7 @@ const BITRIXADMIN = '11',
 
 
 //Создание задачи в Bitrix по пропущенному вызову
-async function createTaskOnMissedCall(bitrixUserId, incomingNumber) {
+async function createTaskOnMissedCall(isAnswered, bitrixUserId, incomingNumber) {
     try {
         if (isAnswered == '304') {
             let resultCreateTask = await bitrix.createTask(bitrixUserId, incomingNumber);
@@ -28,6 +28,20 @@ async function createTaskOnMissedCall(bitrixUserId, incomingNumber) {
     } catch (e) {
         logger.error(`Ошибка создание задачи по пропущенному вызову ${util.inspect(e)}`);
     }
+};
+
+
+async function sendInfoToBitrix(bitrixUserID, incomingNumber, bitrixIDTypeCall, timeStartCall, billsec, isAnswered, recordingUrl) {
+    try {
+        let resultRegisterCall = await bitrix.externalCallRegister(bitrixUserID, incomingNumber, bitrixIDTypeCall, timeStartCall);
+        logger.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
+        let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, bitrixUserID, billsec, isAnswered, bitrixIDTypeCall, recordingUrl);
+        logger.info(`Получен результат завершения входящего вызова ${util.inspect(resultFinishCall)}`);
+        createTaskOnMissedCall(isAnswered, bitrixUserID, incomingNumber);
+    } catch (e) {
+        logger.error(`Ошибка регистрации в Битрикс локального вызова  ${e}`);
+    }
+
 }
 
 /*
@@ -35,10 +49,7 @@ async function createTaskOnMissedCall(bitrixUserId, incomingNumber) {
 { "exten": "749999999999", "unicueid": "1612529458.4626" , "extensionNumber" : "666" , "billsec" : "0", "disposition" : "BUSY", "recording": "1612529458.4626-2021-02-05-15_50.wav", "start" : "2021-02-05 15:50:58", "end" : "2021-02-05 15:51:04" }*/
 async function sendInfoByOutgoingCall({ exten, unicueid, extensionNumber, billsec, disposition, recording, start, end }) {
     try {
-        let resultRegisterCall = await bitrix.externalCallRegister(user[extensionNumber], exten, OUTGOINGID, start);
-        logger.info(`Получен результат регистрации исходящего вызова ${util.inspect(resultRegisterCall)}`);
-        let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[extensionNumber], billsec, status[disposition], OUTGOINGID, recording);
-        logger.info(`Получен результат завершения исходящего вызова ${util.inspect(resultFinishCall)}`);
+        sendInfoToBitrix(user[extensionNumber], exten, OUTGOINGID, start, billsec, status[disposition], recording);
         return;
     } catch (e) {
         logger.error(`Ошибка по исходящему вызову ${e}`);
@@ -57,18 +68,10 @@ async function sendInfoByIncomingCall({ unicueid, incomingNumber, billsec, dispo
         let lastCallUser = await searchInDB.searchLastUserRing(end3CXId[0].info_id);
         let isAnswered = callInfo[0].is_answered ? '200' : '304'; //Проверка отвечен вызов или нет 
 
-        if (user[lastCallUser] != undefined) {
-            let resultRegisterCall = await bitrix.externalCallRegister(user[lastCallUser[0].dn], incomingNumber, INCOMINGID, start);
-            logger.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
-            let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[lastCallUser[0].dn], billsec, isAnswered, INCOMINGID, recording);
-            logger.info(`Получен результат завершения входящего вызова ${util.inspect(resultFinishCall)}`);
-            createTaskOnMissedCall(user[lastCallUser[0].dn], incomingNumber);
+        if (user[lastCallUser[0].dn] != undefined) {
+            sendInfoToBitrix(user[lastCallUser[0].dn], incomingNumber, INCOMINGID, start, billsec, isAnswered, recording);
         } else {
-            let resultRegisterCall = await bitrix.externalCallRegister(BITRIXADMIN, incomingNumber, INCOMINGID, start);
-            logger.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
-            let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, BITRIXADMIN, billsec, isAnswered, INCOMINGID, recording);
-            logger.info(`Получен результат завершения входящего вызова ${util.inspect(resultFinishCall)}`);
-            createTaskOnMissedCall(BITRIXADMIN, incomingNumber);
+            sendInfoToBitrix(BITRIXADMIN, incomingNumber, INCOMINGID, start, billsec, isAnswered, recording);
         }
 
     } catch (e) {
