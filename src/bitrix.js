@@ -6,7 +6,8 @@ const axios = require('axios'),
     config = require(`../config/connect`);
 
 class Bitrix {
-    constructor(domain = config.bitrix.domain, hash = config.bitrix.hash) {
+    constructor(recordIp = '192.168.10.185', domain = config.bitrix.domain, hash = config.bitrix.hash) {
+        this.recordIp = recordIp;
         this.domain = domain;
         this.hash = hash;
         this.config = {
@@ -54,7 +55,7 @@ class Bitrix {
             "DURATION": params[2],
             "STATUS_CODE": params[3],
             "TYPE": params[4],
-            "RECORD_URL": `http://192.168.10.185/${recordTime}/${params[5]}`
+            "RECORD_URL": `http://${recordIp}/monitor/${params[5]}`
         };
 
 
