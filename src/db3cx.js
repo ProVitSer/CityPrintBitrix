@@ -66,4 +66,4 @@ async function searchLastUserRing(end3CXId) {
 };
 
 
-module.exports = { searchFirstIncomingId, searchIncomingCallId, searchEndIncomingId, searchCallInfo, searchLastUserRing };
+module.exports = { searchFirstIncomingId, searchIncomingCallId, searchEndIncomingId, searchCallInfo, searchLastUserRing, searchIncomingInfoByLocalCall };
