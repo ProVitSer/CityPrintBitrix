@@ -9,7 +9,7 @@ const net = require('net'),
     user = require(`./config/user`);
 
 const bitrix = new Bitrix('192.168.10.184');
-const LOCALCALLID = '2';
+const LOCALCALLID = '1';
 
 async function sendInfoToBitrix(localExtensionA, localExtensionB, startCall, billsec, isAnswered, recording) {
     try {
@@ -23,12 +23,13 @@ async function sendInfoToBitrix(localExtensionA, localExtensionB, startCall, bil
 
 }
 
-async function sendInfoByLocalCall(Id3CXcall, startCall, duration, localExtensionA, localExtensionB) {
+async function sendInfoByLocalCall(Id3CXCallCDR, startCall, duration, localExtensionA, localExtensionB) {
     try {
-        let callId = await searchInDB.searchIncomingInfoByLocalCall(Id3CXcall);
-        let callInfo = await searchInDB.searchCallInfo(callId[0].call_id);
+        let end3CXId = await searchInDB.searchEndIncomingId(Id3CXCallCDR);
+        let incomingInfo = await searchInDB.searchIncomingInfoByLocalCall(end3CXId[0].info_id);
+        let callInfo = await searchInDB.searchCallInfo(incomingInfo[0].call_id);
         let isAnswered = callInfo[0].is_answered ? '200' : '304'; //Проверка отвечен вызов или нет 
-        sendInfoToBitrix(localExtensionA, localExtensionB, startCall, duration, isAnswered, callId[0].recording_url);
+        sendInfoToBitrix(localExtensionA, localExtensionB, startCall, duration, isAnswered, incomingInfo[0].recording_url);
     } catch (e) {
         logger.error(`Ошибка поиска данных в БД по локальному вызову ${e}`);
     }
