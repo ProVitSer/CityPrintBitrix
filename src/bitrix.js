@@ -55,7 +55,7 @@ class Bitrix {
             "DURATION": params[2],
             "STATUS_CODE": params[3],
             "TYPE": params[4],
-            "RECORD_URL": `http://${recordIp}/monitor/${params[5]}`
+            "RECORD_URL": `http://${this.recordIp}/monitor/${params[5]}`
         };
 
 
