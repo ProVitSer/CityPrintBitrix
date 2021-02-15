@@ -25,11 +25,11 @@ async function searchIncomingCallId(first3CXId) {
     }
 };
 
-async function searchIncomingInfoByLocalCall(cdr3CXId) {
+async function searchIncomingInfoByLocalCall(end3CXId) {
     try {
-        let callInfo = await db.any(`SELECT call_id,recording_url FROM cl_participants WHERE call_id = ${cdr3CXId}`);
-        logger.info(`searchIncomingInfoByLocalCall ${util.inspect(callInfo)}`);
-        return callInfo;
+        let incomingInfo = await db.any(`SELECT call_id,recording_url FROM cl_participants WHERE info_id = ${end3CXId}`);
+        logger.info(`searchIncomingInfoByLocalCall ${util.inspect(incomingInfo)}`);
+        return incomingInfo;
     } catch (e) {
         return e;
     }
