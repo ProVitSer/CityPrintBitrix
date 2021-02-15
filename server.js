@@ -138,7 +138,7 @@ nami.on(`namiEventNewexten`, (event) => {
     if (event.context == 'incoming-hangup-handler' &&
         event.application == 'NoOp'
     ) {
-        logger.error(`Завершился входящий вызов на Asterisk ${event.appdata}`);
+        logger.info(`Завершился входящий вызов на Asterisk ${event.appdata}`);
         let phoneEvent = JSON.parse(event.appdata);
         setTimeout(sendInfoByIncomingCall, 20000, phoneEvent);
     }

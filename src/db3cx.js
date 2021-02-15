@@ -18,7 +18,7 @@ async function searchFirstIncomingId(incomingNumber) {
 async function searchIncomingCallId(first3CXId) {
     try {
         let callInfo = await db.any(`SELECT call_id,recording_url FROM cl_participants WHERE info_id = ${first3CXId}`);
-        logger.info(`searchIncomingCallId ${util.inspect(callId)}`);
+        logger.info(`searchIncomingCallId ${util.inspect(callInfo)}`);
         return callInfo;
     } catch (e) {
         return e;

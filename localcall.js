@@ -26,7 +26,7 @@ async function sendInfoToBitrix(localExtensionA, localExtensionB, startCall, bil
 async function sendInfoByLocalCall(Id3CXcall, startCall, duration, localExtensionA, localExtensionB) {
     try {
         let callId = await searchInDB.searchIncomingCallId(Id3CXcall);
-        let callInfo = await searchInDB.searchCallInfo(callId);
+        let callInfo = await searchInDB.searchCallInfo(callId[0].call_id);
         let isAnswered = callInfo[0].is_answered ? '200' : '304'; //Проверка отвечен вызов или нет 
         sendInfoToBitrix(localExtensionA, localExtensionB, startCall, duration, isAnswered, callId[0].recording_url);
     } catch (e) {
