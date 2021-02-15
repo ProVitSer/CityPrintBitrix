@@ -25,6 +25,16 @@ async function searchIncomingCallId(first3CXId) {
     }
 };
 
+async function searchIncomingInfoByLocalCall(cdr3CXId) {
+    try {
+        let callInfo = await db.any(`SELECT call_id,recording_url FROM cl_participants WHERE call_id = ${cdr3CXId}`);
+        logger.info(`searchIncomingInfoByLocalCall ${util.inspect(callInfo)}`);
+        return callInfo;
+    } catch (e) {
+        return e;
+    }
+};
+
 async function searchEndIncomingId(callId) {
     try {
         let end3CXId = await db.any(`SELECT info_id FROM cl_participants WHERE call_id = ${callId} ORDER BY info_id DESC LIMIT 1`);
