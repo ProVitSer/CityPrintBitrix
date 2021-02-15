@@ -18,7 +18,7 @@ async function sendInfoToBitrix(localExtensionA, localExtensionB, startCall, bil
         let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[localExtensionA], billsec, isAnswered, LOCALCALLID, recording);
         logger.info(`Получен результат завершения входящего вызова ${util.inspect(resultFinishCall)}`);
     } catch (e) {
-        logger.error(`Ошибка по исходящему вызову ${e}`);
+        logger.error(`Ошибка регистрации в Битрикс локального вызова  ${e}`);
     }
 
 }
@@ -30,7 +30,7 @@ async function sendInfoByLocalCall(Id3CXcall, startCall, duration, localExtensio
         let isAnswered = callInfo[0].is_answered ? '200' : '304'; //Проверка отвечен вызов или нет 
         sendInfoToBitrix(localExtensionA, localExtensionB, startCall, duration, isAnswered, callId[0].recording_url);
     } catch (e) {
-        logger.error(`Ошибка по исходящему вызову ${e}`);
+        logger.error(`Ошибка поиска данных в БД по локальному вызову ${e}`);
     }
 
 }
@@ -53,7 +53,8 @@ const server = net.createServer((connection) => {
             let startCall = moment(new Date(callCDR[1])).add(3, 'hour').format('YYYY-MM-DD H:mm:ss');
             let duration = moment.duration(callCDR[2]).asSeconds();
             //52506 2021-02-15 10:27:33 0 565 104
-            setTimeout(sendInfoByLocalCall, 18000, Id3CXcall, startCall, duration, callCDR[3], localExtensionB[1]);
+            logger.info(Id3CXcall[1], startCall, duration, callCDR[3], localExtensionB[1])
+            setTimeout(sendInfoByLocalCall, 18000, Id3CXcall[1], startCall, duration, callCDR[3], localExtensionB[1]);
         }
     });
 
