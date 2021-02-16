@@ -10,8 +10,8 @@ const Bitrix = require('./src/bitrix'),
 
 const bitrix = new Bitrix();
 const BITRIXADMIN = '11',
-    INCOMINGID = '1',
-    OUTGOINGID = '2';
+    INCOMINGID = '2',
+    OUTGOINGID = '1';
 
 
 //Создание задачи в Bitrix по пропущенному вызову
