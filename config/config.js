@@ -1,4 +1,20 @@
-const bitrixIdNumber = {
+const config = {};
+config.bitrix = {};
+
+
+config.bitrix.incoming = '2';
+config.bitrix.outgoing = '1';
+config.bitrix.adminId = '11';
+config.bitrix.daedlineMin = '5';
+config.bitrix.userTaskId = '11';
+config.bitrix.createTask = 'false';
+config.bitrix.status = {
+    "NO ANSWER": "480",
+    "ANSWERED": "200",
+    "BUSY": "486"
+};
+
+config.bitrix.users = {
     "101": "3",
     "102": "4",
     "103": "5",
@@ -34,4 +50,4 @@ const bitrixIdNumber = {
     "019": "42",
 };
 
-module.exports = bitrixIdNumber;
+module.exports = config;
