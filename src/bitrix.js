@@ -3,7 +3,8 @@ const axios = require('axios'),
     util = require('util'),
     moment = require('moment'),
     logger = require(`../logger/logger`),
-    config = require(`../config/connect`);
+    config = require(`../config/connect`),
+    bitrixConfig = require(`../config/config`);
 
 class Bitrix {
     constructor(recordIp = '192.168.10.185', domain = config.bitrix.domain, hash = config.bitrix.hash) {
@@ -30,7 +31,7 @@ class Bitrix {
     }
 
     async externalCallRegister(...params) {
-        let json = {
+        const json = {
             "USER_ID": params[0],
             "PHONE_NUMBER": params[1],
             "TYPE": params[2],
@@ -40,7 +41,7 @@ class Bitrix {
         };
 
         try {
-            let result = await this.sendAxios('telephony.externalcall.register.json', json)
+            const result = await this.sendAxios('telephony.externalcall.register.json', json)
             return result;
         } catch (e) {
             return e;
@@ -49,7 +50,7 @@ class Bitrix {
 
 
     async externalCallFinish(...params) {
-        let json = {
+        const json = {
             "CALL_ID": params[0],
             "USER_ID": params[1],
             "DURATION": params[2],
@@ -60,7 +61,7 @@ class Bitrix {
 
 
         try {
-            let result = await this.sendAxios('telephony.externalcall.finish', json)
+            const result = await this.sendAxios('telephony.externalcall.finish', json)
             return result;
         } catch (e) {
             return e;
@@ -68,12 +69,12 @@ class Bitrix {
     };
 
     async createTask(...params) {
-        let daedline = moment(new Date).add(2, 'minutes').format('YYYY-MM-DD H:mm:ss');
-        let json = {
+        const daedline = moment(new Date).add(bitrixConfig.bitrix.daedlineMin, 'minutes').format('YYYY-MM-DD H:mm:ss');
+        const json = {
             "fields": {
                 "TITLE": "Пропущенный вызов",
-                "RESPONSIBLE_ID": "11",
-                "CREATED_BY": params[0],
+                "RESPONSIBLE_ID": params[0],
+                "CREATED_BY": bitrixConfig.bitrix.userTaskId,
                 "DESCRIPTION": `Пропущенный вызов от абонента ${params[1]}`,
                 "PRIORITY": "2",
                 "DEADLINE": daedline
@@ -81,7 +82,7 @@ class Bitrix {
         }
 
         try {
-            let result = await this.sendAxios('tasks.task.add', json)
+            const result = await this.sendAxios('tasks.task.add', json)
             return result;
         } catch (e) {
             return e;
@@ -89,12 +90,12 @@ class Bitrix {
     };
 
     async taskStatus(...params) {
-        let json = {
+        const json = {
             "taskId": params[0]
         }
 
         try {
-            let result = await this.sendAxios('tasks.task.get', json)
+            const result = await this.sendAxios('tasks.task.get', json)
             if (result.task.status == '2') {
                 logger.info(`Задача просрочена ${params[0]}`);
                 this.updateTaskResponsibleId(params[0]);
@@ -107,16 +108,16 @@ class Bitrix {
     };
 
     async updateTaskResponsibleId(...params) {
-        let json = {
+        const json = {
             "taskId": params[0],
             "fields": {
-                "RESPONSIBLE_ID": "11"
+                "auditors": [bitrixConfig.bitrix.adminId]
             }
         }
 
         try {
-            let result = await this.sendAxios('tasks.task.update', json)
-            logger.info(`Изменение ответственного по задаче ${util.inspect(result)}`);
+            const result = await this.sendAxios('tasks.task.update', json)
+            logger.info(`Добавление наблюдателя по задаче ${util.inspect(result)}`);
 
         } catch (e) {
             logger.error(e);

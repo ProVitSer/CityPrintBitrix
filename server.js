@@ -4,21 +4,16 @@ const Bitrix = require('./src/bitrix'),
     util = require('util'),
     nami = require(`./models/ami`),
     logger = require(`./logger/logger`),
-    status = require(`./config/status`),
-    user = require(`./config/user`);
+    bitrixConfig = require(`./config/config`);
 
 
 const bitrix = new Bitrix();
-const BITRIXADMIN = '11',
-    INCOMINGID = '2',
-    OUTGOINGID = '1';
-
 
 //Создание задачи в Bitrix по пропущенному вызову
 async function createTaskOnMissedCall(bitrixUserId, incomingNumber, isAnswered) {
     try {
         if (isAnswered == '304') {
-            let resultCreateTask = await bitrix.createTask(bitrixUserId, incomingNumber);
+            const resultCreateTask = await bitrix.createTask(bitrixUserId, incomingNumber);
             logger.info(`Создана задача  ${util.inspect(resultCreateTask)}`);
             setTimeout(bitrix.taskStatus.bind(bitrix), 180000, resultCreateTask.task.id);
             return;
@@ -36,9 +31,9 @@ async function createTaskOnMissedCall(bitrixUserId, incomingNumber, isAnswered) 
 5:50:58", "end" : "2021-02-05 15:51:04" }*/
 async function sendInfoByOutgoingCall({ exten, unicueid, extensionNumber, billsec, disposition, recording, start, end }) {
     try {
-        let resultRegisterCall = await bitrix.externalCallRegister(user[extensionNumber], exten, OUTGOINGID, start);
+        const resultRegisterCall = await bitrix.externalCallRegister(bitrixConfig.bitrix.users[extensionNumber], exten, bitrixConfig.bitrix.outgoing, start);
         logger.info(`Получен результат регистрации исходящего вызова ${util.inspect(resultRegisterCall)}`);
-        let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[extensionNumber], billsec, status[disposition], OUTGOINGID, recording);
+        const resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, bitrixConfig.bitrix.users[extensionNumber], billsec, bitrixConfig.bitrix.status[disposition], bitrixConfig.bitrix.outgoing, recording);
         logger.info(`Получен результат завершения исходящего вызова ${util.inspect(resultFinishCall)}`);
         return;
     } catch (e) {
@@ -52,25 +47,31 @@ async function sendInfoByOutgoingCall({ exten, unicueid, extensionNumber, billse
  "2021-02-05 15:45:25" }*/
 async function sendInfoByIncomingCall({ unicueid, incomingNumber, billsec, disposition, recording, start, end }) {
     try {
-        let first3CXId = await searchInDB.searchFirstIncomingId(incomingNumber);
-        let callId = await searchInDB.searchIncomingCallId(first3CXId[0].id);
-        let end3CXId = await searchInDB.searchEndIncomingId(callId[0].call_id);
-        let callInfo = await searchInDB.searchCallInfo(callId[0].call_id);
-        let lastCallUser = await searchInDB.searchLastUserRing(end3CXId[0].info_id);
-        let isAnswered = callInfo[0].is_answered ? '200' : '304'; //Проверка отвечен вызов или нет
+        const first3CXId = await searchInDB.searchFirstIncomingId(incomingNumber);
+        const callId = await searchInDB.searchIncomingCallId(first3CXId[0].id);
+        const end3CXId = await searchInDB.searchEndIncomingId(callId[0].call_id);
+        const callInfo = await searchInDB.searchCallInfo(callId[0].call_id);
+        const lastCallUser = await searchInDB.searchLastUserRing(end3CXId[0].info_id);
+        const isAnswered = callInfo[0].is_answered ? '200' : '304'; //Проверка отвечен вызов или нет
 
-        if (user[lastCallUser[0].dn] != undefined) {
-            let resultRegisterCall = await bitrix.externalCallRegister(user[lastCallUser[0].dn], incomingNumber, INCOMINGID, start);
+        if (config.bitrix.users[lastCallUser[0].dn] != undefined) {
+            const resultRegisterCall = await bitrix.externalCallRegister(bitrixConfig.bitrix.users[lastCallUser[0].dn], incomingNumber, bitrixConfig.bitrix.incoming, start);
             logger.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
-            let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, user[lastCallUser[0].dn], billsec, isAnswered, INCOMINGID, recording);
+            const resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, bitrixConfig.bitrix.users[lastCallUser[0].dn], billsec, isAnswered, bitrixConfig.bitrix.incoming, recording);
             logger.info(`Получен результат завершения входящего вызова ${util.inspect(resultFinishCall)}`);
-            createTaskOnMissedCall(user[lastCallUser[0].dn], incomingNumber, isAnswered);
+            if (config.bitrix.createTask == 'true') {
+                createTaskOnMissedCall(bitrixConfig.bitrix.users[lastCallUser[0].dn], incomingNumber, isAnswered);
+            }
+            return '';
         } else {
-            let resultRegisterCall = await bitrix.externalCallRegister(BITRIXADMIN, incomingNumber, INCOMINGID, start);
+            const resultRegisterCall = await bitrix.externalCallRegister(bitrixConfig.bitrix.adminId, incomingNumber, bitrixConfig.bitrix.incoming, start);
             logger.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
-            let resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, BITRIXADMIN, billsec, isAnswered, INCOMINGID, recording);
+            const resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, bitrixConfig.bitrix.adminId, billsec, isAnswered, bitrixConfig.bitrix.incoming, recording);
             logger.info(`Получен результат завершения входящего вызова ${util.inspect(resultFinishCall)}`);
-            createTaskOnMissedCall(BITRIXADMIN, incomingNumber, isAnswered);
+            if (config.bitrix.createTask == 'true') {
+                createTaskOnMissedCall(bitrixConfig.bitrix.adminId, incomingNumber, isAnswered);
+            }
+            return '';
         }
 
     } catch (e) {
@@ -106,7 +107,7 @@ nami.on(`namiEventNewexten`, (event) => {
         event.application == 'NoOp'
     ) {
         logger.info(`Завершился исходящие вызов на Asterisk ${event.appdata}`);
-        let phoneEvent = JSON.parse(event.appdata);
+        const phoneEvent = JSON.parse(event.appdata);
         sendInfoByOutgoingCall(phoneEvent);
     }
 });
@@ -139,7 +140,7 @@ nami.on(`namiEventNewexten`, (event) => {
         event.application == 'NoOp'
     ) {
         logger.info(`Завершился входящий вызов на Asterisk ${event.appdata}`);
-        let phoneEvent = JSON.parse(event.appdata);
+        const phoneEvent = JSON.parse(event.appdata);
         setTimeout(sendInfoByIncomingCall, 20000, phoneEvent);
     }
 });
