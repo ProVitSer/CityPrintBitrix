@@ -3,10 +3,11 @@ const axios = require('axios'),
     util = require('util'),
     moment = require('moment'),
     logger = require(`../logger/logger`),
-    bitrixConfig = require(`../config/bitrix.config`);
+    config = require(`../config/connect`),
+    bitrixConfig = require(`../config/config`);
 
 class Bitrix {
-    constructor(recordIp = '192.168.10.185', domain = bitrixConfig.bitrix.domain, hash = bitrixConfig.bitrix.hash) {
+    constructor(recordIp = '192.168.10.185', domain = config.bitrix.domain, hash = config.bitrix.hash) {
         this.recordIp = recordIp;
         this.domain = domain;
         this.hash = hash;
@@ -96,7 +97,7 @@ class Bitrix {
         try {
             const result = await this.sendAxios('tasks.task.get', json)
             if (result.task.status == '2') {
-                logger.access.info(`Задача просрочена ${params[0]}`);
+                logger.info(`Задача просрочена ${params[0]}`);
                 this.updateTaskResponsibleId(params[0]);
             }
             return;
@@ -116,10 +117,10 @@ class Bitrix {
 
         try {
             const result = await this.sendAxios('tasks.task.update', json)
-            logger.access.info(`Добавление наблюдателя по задаче ${util.inspect(result)}`);
+            logger.info(`Добавление наблюдателя по задаче ${util.inspect(result)}`);
 
         } catch (e) {
-            logger.error.error(e);
+            logger.error(e);
         }
     };
 
