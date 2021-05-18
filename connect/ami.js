@@ -1,34 +1,34 @@
 "use strict";
-const appConfig = require(`../config/connect`),
+const config = require(`../config/asterisk.config`),
     namiLib = require(`nami`),
     logger = require(`../logger/logger`);
 
 const namiConfig = {
-    host: appConfig.ami.host,
-    port: appConfig.ami.port,
-    username: appConfig.ami.username,
-    secret: appConfig.ami.secret
+    host: config.ami.host,
+    port: config.ami.port,
+    username: config.ami.username,
+    secret: config.ami.secret
 };
 
 let nami = new namiLib.Nami(namiConfig);
 
 nami.on(`namiConnectionClose`, function(data) {
-    logger.error(`Переподключение к AMI ...`);
+    logger.error.error(`Переподключение к AMI ...`);
     setTimeout(function() {
         nami.open();
     }, 5000);
 });
 
 nami.on(`namiInvalidPeer`, function(data) {
-    logger.error(`Invalid AMI Salute. Not an AMI?`);
+    logger.error.error(`Invalid AMI Salute. Not an AMI?`);
     process.exit();
 });
 nami.on(`namiLoginIncorrect`, function() {
-    logger.error(`Некорректный логин или пароль от AMI`);
+    logger.error.error(`Некорректный логин или пароль от AMI`);
     process.exit();
 });
 nami.on('namiConnected', function(event) {
-    logger.info(`Подключение к AMI успешно установлено`);
+    logger.access.info(`Подключение к AMI успешно установлено`);
 })
 
 nami.logLevel = 0;

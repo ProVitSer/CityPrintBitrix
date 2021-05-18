@@ -6,7 +6,7 @@ const net = require('net'),
     logger = require(`./logger/logger`),
     Bitrix = require('./src/bitrix'),
     searchInDB = require('./src/db3cx'),
-    bitrixConfig = require(`./config/config`);
+    bitrixConfig = require(`./config/bitrix.config`);
 
 const bitrix = new Bitrix('192.168.10.184');
 

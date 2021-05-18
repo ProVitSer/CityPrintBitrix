@@ -1,32 +1,16 @@
 'use strict';
-const axios = require('axios'),
+const Axios = require('./axios'),
     util = require('util'),
     moment = require('moment'),
     logger = require(`../logger/logger`),
     bitrixConfig = require(`../config/bitrix.config`);
 
-class Bitrix {
+class Bitrix extends Axios {
     constructor(recordIp = '192.168.10.185', domain = bitrixConfig.bitrix.domain, hash = bitrixConfig.bitrix.hash) {
+        super();
         this.recordIp = recordIp;
         this.domain = domain;
         this.hash = hash;
-        this.config = {
-            headers: {
-                'User-Agent': 'voipnotes/0.0.1',
-                'Content-Type': 'application/json',
-
-            }
-        }
-    }
-
-    async sendAxios(url, json) {
-        const res = await axios.post(`https://${this.domain}/rest/41/${this.hash}/${url}`, JSON.stringify(json), this.config)
-        const result = await res;
-
-        if (!result) {
-            return [];
-        }
-        return result.data.result
     }
 
     async externalCallRegister(...params) {
@@ -40,8 +24,8 @@ class Bitrix {
         };
 
         try {
-            const result = await this.sendAxios('telephony.externalcall.register.json', json)
-            return result;
+            const result = await this.post(`${this.domain}/${this.hash}/telephony.externalcall.register.json`, json)
+            return result.data.result;
         } catch (e) {
             return e;
         }
@@ -60,8 +44,8 @@ class Bitrix {
 
 
         try {
-            const result = await this.sendAxios('telephony.externalcall.finish', json)
-            return result;
+            const result = await this.post(`${this.domain}/${this.hash}/telephony.externalcall.finish`, json)
+            return result.data.result;
         } catch (e) {
             return e;
         }
@@ -81,8 +65,8 @@ class Bitrix {
         }
 
         try {
-            const result = await this.sendAxios('tasks.task.add', json)
-            return result;
+            const result = await this.post(`${this.domain}/${this.hash}/tasks.task.add`, json)
+            return result.data.result;
         } catch (e) {
             return e;
         }
@@ -94,7 +78,7 @@ class Bitrix {
         }
 
         try {
-            const result = await this.sendAxios('tasks.task.get', json)
+            const result = await this.post(`${this.domain}/${this.hash}/tasks.task.get`, json)
             if (result.task.status == '2') {
                 logger.access.info(`Задача просрочена ${params[0]}`);
                 this.updateTaskResponsibleId(params[0]);
@@ -115,7 +99,7 @@ class Bitrix {
         }
 
         try {
-            const result = await this.sendAxios('tasks.task.update', json)
+            const result = await this.post(`${this.domain}/${this.hash}/tasks.task.update`, json)
             logger.access.info(`Добавление наблюдателя по задаче ${util.inspect(result)}`);
 
         } catch (e) {

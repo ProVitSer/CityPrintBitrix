@@ -2,9 +2,9 @@
 const Bitrix = require('./src/bitrix'),
     searchInDB = require('./src/db3cx'),
     util = require('util'),
-    nami = require(`./models/ami`),
+    nami = require(`./connect/ami`),
     logger = require(`./logger/logger`),
-    bitrixConfig = require(`./config/config`);
+    bitrixConfig = require(`./config/bitrix.config`);
 
 
 const bitrix = new Bitrix();
