@@ -4,6 +4,7 @@ const { Sequelize, DataTypes } = require("sequelize"),
 const sequelize = new Sequelize(config.pg.database, config.pg.user, config.pg.password, {
     dialect: "postgres",
     host: config.pg.host,
+    port: config.pg.port,
     define: {
         timestamps: false
     },

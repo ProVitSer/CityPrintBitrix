@@ -12,6 +12,7 @@ const bitrix = new Bitrix('192.168.10.184');
 
 async function sendInfoToBitrix(localExtensionA, localExtensionB, startCall, billsec, isAnswered, recording) {
     try {
+        logger.access.info(localExtensionA, localExtensionB, startCall, billsec, isAnswered, recording);
         const resultRegisterCall = await bitrix.externalCallRegister(bitrixConfig.bitrix.users[localExtensionA], localExtensionB, bitrixConfig.bitrix.outgoing, startCall);
         logger.access.info(`Получен результат регистрации входящего вызова ${util.inspect(resultRegisterCall)}`);
         const resultFinishCall = await bitrix.externalCallFinish(resultRegisterCall, bitrixConfig.bitrix.users[localExtensionA], billsec, isAnswered, bitrixConfig.bitrix.outgoing, recording);

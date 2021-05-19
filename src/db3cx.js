@@ -26,7 +26,6 @@ async function searchIncomingCallId(first3CXId) {
     try {
         const callInfo = await pg.clParticipants.findAll({ raw: true, attributes: ["call_id", "recording_url"], where: { info_id: first3CXId } });
         logger.access.info(`searchIncomingCallId ${util.inspect(callInfo)}`);
-        logger.access.info(`searchIncomingCallId ${util.inspect(callInfo)}`);
         return callInfo;
     } catch (e) {
         logger.error.error(e);
@@ -47,7 +46,7 @@ async function searchIncomingInfoByLocalCall(end3CXId) {
 
 async function searchEndIncomingId(callId) {
     try {
-        const end3CXId = await clParticipants.findAll({
+        const end3CXId = await pg.clParticipants.findAll({
             raw: true,
             attributes: ["info_id"],
             where: { call_id: callId },

@@ -3,7 +3,7 @@ const mongoose = require('mongoose'),
     config = require(`../config/mongo.config`),
     logger = require(`../logger/logger`);
 
-const mongoDB = `mongodb://${config.mongo.localDB}:${config.mongo.localPort}/${config.mongo.localDB}`;
+const mongoDB = `mongodb://${config.mongo.localHost}:${config.mongo.localPort}/${config.mongo.localDB}`;
 
 
 mongoose.connect(mongoDB, {
