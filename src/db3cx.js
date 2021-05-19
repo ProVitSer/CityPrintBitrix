@@ -44,6 +44,29 @@ async function searchIncomingInfoByLocalCall(end3CXId) {
     }
 }
 
+async function searchRecordingByCallID(callId) {
+    try {
+        let recording = await pg.clParticipants.findAll({
+            raw: true,
+            attributes: ["recording_url"],
+            where: {
+                call_id: callId,
+                recording_url: {
+                    [pg.Op.not]: null,
+                }
+            }
+        });
+        if (recording == []) {
+            recording = null;
+        }
+        logger.access.info(`searchRecordingByCallID ${util.inspect(recording)}`);
+        return recording;
+    } catch (e) {
+        logger.error.error(e);
+        return e;
+    }
+}
+
 async function searchEndIncomingId(callId) {
     try {
         const end3CXId = await pg.clParticipants.findAll({
@@ -86,4 +109,4 @@ async function searchLastUserRing(end3CXId) {
 }
 
 
-module.exports = { searchFirstIncomingId, searchIncomingCallId, searchEndIncomingId, searchCallInfo, searchLastUserRing, searchIncomingInfoByLocalCall };
+module.exports = { searchFirstIncomingId, searchIncomingCallId, searchEndIncomingId, searchCallInfo, searchLastUserRing, searchIncomingInfoByLocalCall, searchRecordingByCallID };

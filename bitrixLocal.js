@@ -26,10 +26,12 @@ async function sendInfoToBitrix(localExtensionA, localExtensionB, startCall, bil
 async function sendInfoByLocalCall(Id3CXCallCDR, startCall, duration, localExtensionA, localExtensionB) {
     try {
         const end3CXId = await searchInDB.searchEndIncomingId(Id3CXCallCDR);
-        const incomingInfo = await searchInDB.searchIncomingInfoByLocalCall(end3CXId[0].info_id);
-        const callInfo = await searchInDB.searchCallInfo(incomingInfo[0].call_id);
+        //const incomingInfo = await searchInDB.searchIncomingInfoByLocalCall(end3CXId[0].info_id);
+        //const callInfo = await searchInDB.searchCallInfo(incomingInfo[0].call_id);
+        const recording = await searchInDB.searchRecordingByCallID(Id3CXCallCDR);
+        const callInfo = await searchInDB.searchCallInfo(Id3CXCallCDR);
         const isAnswered = callInfo[0].is_answered ? '200' : '304'; //Проверка отвечен вызов или нет 
-        sendInfoToBitrix(localExtensionA, localExtensionB, startCall, duration, isAnswered, incomingInfo[0].recording_url);
+        sendInfoToBitrix(localExtensionA, localExtensionB, startCall, duration, isAnswered, recording[0].recording_url);
     } catch (e) {
         logger.error.error(`Ошибка поиска данных в БД по локальному вызову ${e}`);
     }

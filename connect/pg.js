@@ -1,4 +1,4 @@
-const { Sequelize, DataTypes } = require("sequelize"),
+const { Sequelize, DataTypes, Op } = require("sequelize"),
     config = require(`../config/pg.config`);
 
 const sequelize = new Sequelize(config.pg.database, config.pg.user, config.pg.password, {
@@ -12,7 +12,7 @@ const sequelize = new Sequelize(config.pg.database, config.pg.user, config.pg.pa
 });
 
 const pg = {};
-
+pg.Op = Op;
 pg.clCalls = require("../models/clCalls.models")(sequelize, DataTypes);
 pg.clParticipants = require("../models/clParticipants.models")(sequelize, DataTypes);
 pg.clPartyInfo = require("../models/clPartyInfo.models")(sequelize, DataTypes);
