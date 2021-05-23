@@ -24,5 +24,7 @@ connection.on('error', (error) => {
 
 const mongo = {};
 const phonebooksScheme = require("../models/phonebooks.models")(Schema);
+const tasksScheme = require("../models/missedCall.models")(Schema);
 mongo.Phonebooks = mongoose.model("phonebooks", phonebooksScheme);
+mongo.Tasks = mongoose.model("tasks", tasksScheme);
 module.exports = mongo;
