@@ -31,6 +31,7 @@ async function sendInfoByLocalCall(Id3CXCallCDR, startCall, duration, localExten
         const recording = await searchInDB.searchRecordingByCallID(Id3CXCallCDR);
         const callInfo = await searchInDB.searchCallInfo(Id3CXCallCDR);
         const isAnswered = callInfo[0].is_answered ? '200' : '304'; //Проверка отвечен вызов или нет 
+        logger.access.info(`Получен результат recording ${util.inspect(recording)}   ${util.inspect(callInfo)}  ${util.inspect(isAnswered)}`);
         sendInfoToBitrix(localExtensionA, localExtensionB, startCall, duration, isAnswered, recording[0].recording_url);
     } catch (e) {
         logger.error.error(`Ошибка поиска данных в БД по локальному вызову ${e}`);
