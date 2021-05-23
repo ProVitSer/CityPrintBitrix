@@ -1,6 +1,6 @@
 {
     "name": "cityprintbitrix",
-    "version": "1.0.1",
+    "version": "2.0.0",
     "description": "Интеграция Bitrix24 с IP PBX 3CX",
     "main": "server.js",
     "scripts": {
