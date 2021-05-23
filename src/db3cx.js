@@ -57,7 +57,7 @@ async function searchRecordingByCallID(callId) {
             }
         });
         if (recording == []) {
-            recording = null;
+            recording[0] = { "recording_url": null };
         }
         logger.access.info(`searchRecordingByCallID ${util.inspect(recording)}`);
         return recording;
